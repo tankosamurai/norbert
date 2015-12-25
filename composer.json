@@ -1,0 +1,26 @@
+{
+    "name": "tankosamurai/norbert",
+    "authors": [
+        {
+            "name": "tankosamurai",
+            "email": "tankosamurai@outlook.com"
+        }
+    ],
+    "require": {
+        "tankosamurai/singlepack": "dev-master"
+    },
+    "require-dev": {
+        "psy/psysh": "dev-master"
+    },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/tankosamurai/singlepack.git"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Norbert\\": "lib/"
+        }
+    }
+}
