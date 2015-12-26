@@ -2,37 +2,55 @@
 
 namespace Norbert;
 
+use ArrayAccess;
+use IteratorAggregate;
+use ArrayIterator;
 use SinglePack;
 
-class Compound {
+class Compound implements ArrayAccess, IteratorAggregate {
 
     public $name;
 
     private $data;
 
-    function __construct(){
-        $this->name = "";
+    function __construct($name = ""){
+        $this->name = $name;
         $this->data = [];
     }
 
-    function __get($key){
-        return $this->data[$key];
+    function offsetExists($offset){
+        return isset($this->data[$offset]);
     }
 
-    function __set($key, $value){
-        $this->data[$key] = $value;
+    function offsetGet($offset){
+        return $this->data[$offset];
+    }
+
+    function offsetSet($offset, $value){
+        return $this->data[$offset] = $value;
+    }
+
+    function offsetUnset($offset){
+        unset($this->data[$offset]);
+    }
+
+    function getIterator(){
+        return new ArrayIterator($this->data);
+    }
+
+    function packedID(){
+        return SinglePack\pack("C", 0x0a);
     }
 
     function pack(){
         $tmp  = "";
-        $tmp .= SinglePack\pack("C", 0x0a);
-        $tmp .= SinglePack\pack("n", strlen($this->name));
-        $tmp .= $this->name;
 
-        foreach($this->data as $key => $value){
-            // $length = strlen($key);
-            // $tmp .= SinglePack\pack("n", $length);
-            // $tmp .= $key;
+        foreach($this as $offset => $value){
+            $name = strval($offset);
+
+            $tmp .= $value->packedID();
+            $tmp .= SinglePack\pack("n", strlen($name));
+            $tmp .= $name;
             $tmp .= $value->pack();
         }
 
