@@ -2,51 +2,59 @@
 
 namespace Norbert;
 
-use ArrayAccess;
-use IteratorAggregate;
-use ArrayIterator;
 use SinglePack;
 
-class Compound implements ArrayAccess, IteratorAggregate {
+class Compound implements Packable {
 
-    public $name;
+    static $id = 0x0a;
 
-    private $data;
+    private $data = [];
 
-    function __construct($name = ""){
-        $this->name = $name;
-        $this->data = [];
+    function get($key){
+        return $this->data[$key];
     }
 
-    function offsetExists($offset){
-        return isset($this->data[$offset]);
+    function setByte($key, $value){
+        return $this->data[$key] = new Byte($value);
     }
 
-    function offsetGet($offset){
-        return $this->data[$offset];
+    function setShort($key, $value){
+        return $this->data[$key] = new Short($value);
     }
 
-    function offsetSet($offset, $value){
-        return $this->data[$offset] = $value;
+    function setInt($key, $value){
+        return $this->data[$key] = new Int($value);
     }
 
-    function offsetUnset($offset){
-        unset($this->data[$offset]);
+    function setLong($key, $value){
+        return $this->data[$key] = new Long($value);
     }
 
-    function getIterator(){
-        return new ArrayIterator($this->data);
+    function setFloat($key, $value){
+        return $this->data[$key] = new Float($value);
+    }
+
+    function setDouble($key, $value){
+        return $this->data[$key] = new Double($value);
+    }
+
+    function setString($key, $value){
+        return $this->data[$key] = new String($value);
+    }
+
+    function setCompound($key){
+        return $this->data[$key] = new Compound();
     }
 
     function packedID(){
         return SinglePack\pack("C", 0x0a);
     }
 
-    function pack(){
-        $tmp  = "";
+    function packedBody(){
+        $tmp = "";
 
-        foreach($this as $offset => $value){
-            $name = strval($offset);
+        foreach($this->data as $key => $value){
+            $name = strval($key);
 
             $tmp .= $value->packedID();
             $tmp .= SinglePack\pack("n", strlen($name));
@@ -54,6 +62,13 @@ class Compound implements ArrayAccess, IteratorAggregate {
             $tmp .= $value->pack();
         }
 
+        return $tmp;
+    }
+
+    function pack(){
+        $tmp = "";
+        // $tmp  = $this->packedID();
+        $tmp .= $this->packedBody();
         $tmp .= SinglePack\pack("C", 0);
 
         return $tmp;

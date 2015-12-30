@@ -3,13 +3,6 @@
 namespace Norbert;
 
 use SinglePack;
-use Norbert\Nametag;
-use Norbert\Byte;
-use Norbert\Short;
-use Norbert\Int;
-use Norbert\Long;
-use Norbert\Float;
-use Norbert\Double;
 
 class Parser {
 
@@ -25,78 +18,85 @@ class Parser {
         return SinglePack\unpack($format, $this->lexer->read($length));
     }
 
-    function parse(){
+    function parseCompound($com){
         while($this->lexer->hasNext(1)){
             $header = $this->readUnpack("C", 1);
 
             switch($header){
                 case 0:
-                    echo "[End]" . PHP_EOL;
+                    return $com;
                     break;
                 case 1:
                     $length = $this->readUnpack("n", 2);
-                    $name     = $this->lexer->read($length);
-                    $value    = $this->readUnpack("C", 1);
-
-                    $nametag = new Nametag($name);
-                    $nametag->value = new Byte($value);
-
+                    $name   = $this->lexer->read($length);
+                    $value  = $this->readUnpack("C", 1);
+                    $com->setByte($name, $value);
                     break;
                 case 2:
                     $length = $this->readUnpack("n", 2);
-                    $name     = $this->lexer->read($length);
-                    $value    = $this->readUnpack("n", 2);
-
-                    $nametag = new Nametag($name);
-                    $nametag->value = new Short($value);
-
-                    print_r($nametag);
-
+                    $name   = $this->lexer->read($length);
+                    $value  = $this->readUnpack("n", 2);
+                    $com->setShort($name, $value);
                     break;
                 case 3:
                     $length = $this->readUnpack("n", 2);
-                    $name     = $this->lexer->read($length);
-                    $value    = $this->readUnpack("N", 4);
-
-                    $nametag = new Nametag($name);
-                    $nametag->value = new Int($value);
-
-                    print_r($nametag);
-
+                    $name   = $this->lexer->read($length);
+                    $value  = $this->readUnpack("N", 4);
+                    $com->setInt($name, $value);
                     break;
                 case 4:
                     $length = $this->readUnpack("n", 2);
-                    $name     = $this->lexer->read($length);
-                    $value    = $this->readUnpack("J", 8);
-
-                    $nametag = new Nametag($name);
-                    $nametag->value = new Long($value);
-
-                    print_r($nametag);
-
+                    $name   = $this->lexer->read($length);
+                    $value  = $this->readUnpack("J", 8);
+                    $com->setLong($name, $value);
                     break;
                 case 5:
                     $length = $this->readUnpack("n", 2);
-                    $name     = $this->lexer->read($length);
-                    $value    = $this->readUnpack("F", 4);
+                    $name   = $this->lexer->read($length);
+                    $value  = $this->readUnpack("F", 4);
+                    $com->setFloat($name, $value);
                     break;
                 case 6:
-                    echo "Double not supported yet." . PHP_EOL;
+                    $length = $this->readUnpack("n", 2);
+                    $name   = $this->lexer->read($length);
+                    $value  = $this->readUnpack("F", 4);
+                    $com->setDouble($name, $value);
                     break;
                 case 7:
                     break;
                 case 8:
                     $length = $this->readUnpack("n", 2);
-                    $name     = $this->lexer->read($length);
+                    $name   = $this->lexer->read($length);
                     $valueL = $this->readUnpack("n", 2);
-                    $value    = $this->lexer->read($valueL);
+                    $value  = $this->lexer->read($valueL);
+                    $com->setString($name, $value);
                     break;
                 case 9:
                     break;
                 case 10:
+                    $length = $this->readUnpack("n", 2);
+                    $name   = $this->lexer->read($length);
+                    $sub    = $com->setCompound($name);
+                    $this->parseCompound($sub);
+                    return $com;
                     break;
                 case 11:
                     break;
+            }
+        }
+
+    }
+
+    function parse(){
+        $nbt = new NamedBinaryTag();
+
+        while($this->lexer->hasNext(1)){
+            $header = $this->readUnpack("C", 1);
+
+            if($header === 10){
+                $length = $this->readUnpack("n", 2);
+                $name   = $this->lexer->read($length);
+                return $this->parseCompound($nbt);
             }
         }
     }
