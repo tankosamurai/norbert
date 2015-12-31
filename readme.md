@@ -12,7 +12,7 @@ Opening a file.
 <?php
 
 $level = Norbert\NamedBinaryTag::open("./level.dat");
-$level->get("Data")->get("version"); #=> 19132
+$level->get("Data")->get("version"); #=> 19133
 
 ?>
 ```
