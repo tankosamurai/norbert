@@ -11,11 +11,8 @@ Opening a file.
 ```
 <?php
 
-$gzsrc  = file_get_contents("./a_file.dat");
-$source = gzdecode($gzsrc);
-$lexer  = new Norbert\Lexer($source);
-$parser = new Norbert\Parser($lexer);
-$tree   = $parser->parse();
+$level = Norbert\NamedBinaryTag::open("./level.dat");
+$level->get("Data")->get("version"); #=> 19132
 
 ?>
 ```
@@ -25,14 +22,9 @@ Writing a file.
 ```
 <?php
 
-$com  = new Norbert\Compound();
-$com->name = "Data";
+$level = Norbert\NamedBinaryTag::open("./level.dat");
+$level->get("Data")->setInt("version", 19134);
+$level->save("./level.dat");
 
-$tag  = new Norbert\NameTag();
-$tag->name = "boom";
-$tag->value = new Norbert\Byte(1);
-
-$com->hoge = $tag;
-file_put_contents("./test", $com->pack());
 ?>
 ```

@@ -72,6 +72,10 @@ class Parser {
                     $com->setString($name, $value);
                     break;
                 case 9:
+                    $length = $this->readUnpack("n", 2);
+                    $name   = $this->lexer->read($length);
+                    $id     = $this->readUnpack("C", 1);
+                    $valueL = $this->readUnpack("N", 4);
                     break;
                 case 10:
                     $length = $this->readUnpack("n", 2);
